@@ -5,13 +5,12 @@ from sympy import *
 
 matrices = list()
 diccionario = dict()
-
-f = Frame(height = 600, width = 820)
+root = Tk()
+f = Frame(root,height = 600, width = 820)
 f.pack()
 titulo = Label(f,text ="Programa Pytrix", fg="blue",font=('Arial',20))
 titulo.place(x = 330, y = 5)
 
-print("se creo el cuadro")
 gBotones = LabelFrame(f,text="Menu ",padx=5,pady=5)
 gBotones.place(x = 695,y = 50)
 gText = LabelFrame(f,text="Texto",padx=5,pady=5)
@@ -24,7 +23,8 @@ t = Text(gText, height = 30,width=80)
 t.pack()
 bMult = Button(gMenu, text="x", width = 10)
 bMult.pack(padx=5,pady=5)
-bSum = Button(gMenu, text="+", width = 10)
+bSum = Button(gMenu, text="+", width = 10,
+              command = lambda:Suma(lstMatrices.get(lstMatrices.curselection())))
 bSum.pack(padx=5,pady=5)
 bRes = Button(gMenu, text="-", width = 10)
 bRes.pack(padx=5,pady=5)
@@ -249,15 +249,38 @@ def Inversa(Nombre):
                 pass
             t.insert(END,"\n")
 
-    lstMatrices.insert(END,res)
-    string = 'res ' +Nombre
-    diccionario[string]=matrices[-1]
+    string = Nombre + "^-1"
+    lstMatrices.insert(END,string)
+    matrices.insert(END,res)
+    diccionario[string]= matrices[-1]
+    print(diccionario)
+    
+def Suma(Nombre):
+    m = Matrix(diccionario[Nombre])
+    f = Toplevel()
+    scrl = Scrollbar(f )
+    l = Listbox(f,yscrollcommand=scrl)
+    l.grid(row =1, column =0)
+    scrl.config(command=l.yview)
+    scrl.grid(row=1,column=1)
+    btn = Button(f, text="Sumar", command = lambda: Operacion(m,l.get(l.curselection())))
+    btn.grid(row=2,column=0)
+    for item in diccionario:
+        l.insert(END, item)
 
-        
-    
-    
-    
+    def Operacion(m, Nombre):
+        m2 = Matrix(diccionario[Nombre])
+        res = m + m2
+        row = list()
+        for i in range(0, len(res.row(0))):
+            pass    
+        string = "Suma"
+        lstMatrices.insert(END,string)
+        matrices.insert(END,int(res))
+        diccionario[string]= matrices[-1]
+        print(diccionario)
+        f.destroy()
 
 
     
-    
+root.mainloop()    
