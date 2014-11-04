@@ -21,12 +21,14 @@ gMenu = LabelFrame(f,text="Operaciones", padx=5,pady=5)
 gMenu.place(x=695,y=380)
 t = Text(gText, height = 30,width=80)
 t.pack()
-bMult = Button(gMenu, text="x", width = 10)
+bMult = Button(gMenu, text="x", width = 10,
+               command = lambda:Multiplicacion(lstMatrices.get(lstMatrices.curselection())))
 bMult.pack(padx=5,pady=5)
 bSum = Button(gMenu, text="+", width = 10,
               command = lambda:Suma(lstMatrices.get(lstMatrices.curselection())))
 bSum.pack(padx=5,pady=5)
-bRes = Button(gMenu, text="-", width = 10)
+bRes = Button(gMenu, text="-", width = 10,
+              command = lambda:Resta(lstMatrices.get(lstMatrices.curselection())))
 bRes.pack(padx=5,pady=5)
 bInv = Button(gMenu, text="Inversa", width = 10,\
               command=lambda:Inversa(lstMatrices.get(lstMatrices.curselection())))
@@ -129,16 +131,23 @@ def init():
         
             lstMatrices.insert(END,Nombre)
             diccionario[Nombre]=matrices[-1]
-            print(diccionario)
+            
             fx.destroy()
             
             t.insert(END,"Matriz creada exitosamente!\n\n")
             
 def mostrar(Matriz,Nombre):
-    t.insert(END,(Nombre + " = \n"))
-    for i in range(0,len(Matriz)):
+    
+    try:
+        t.insert(END,(Nombre + " = \n"))
+        for i in range(0,len(Matriz)):
+            t.insert(END,"\t")
+            t.insert(END,Matriz[i])
+            t.insert(END,"\n")
+    except TypeError:
+        t.insert(END,(Nombre + "="))
         t.insert(END,"\t")
-        t.insert(END,Matriz[i])
+        t.insert(END, Matriz)
         t.insert(END,"\n")
             
           
@@ -150,7 +159,7 @@ def onSelect(evt):
         try:
             t.insert(END,"no hay nada en la lista seleccionado\n")
         except Exception:
-            print("no hay nada")
+            t.insert(END, "hubo un Error \n")
         pass
     else:
         fn=Toplevel()
@@ -171,8 +180,9 @@ def onSelect(evt):
         btn.pack(padx=5,pady=5)
         lstMatrices.get(lstMatrices.curselection())  
     def si():
+        
         mostrar(diccionario[lstMatrices.get(lstMatrices.curselection())],\
-                lstMatrices.get(lstMatrices.curselection()))
+                    lstMatrices.get(lstMatrices.curselection()))
         fn.destroy()
 
 lstMatrices.bind('<<ListboxSelect>>',onSelect)
@@ -186,14 +196,10 @@ def gauss(Nombre):
         m = Matrix(diccionario[Nombre])
         res = m.rref()
         t.insert(END, "Resultado = \n")
-        
-        for i in range(0,len(res[0])):
-            t.insert(END,"\t")
-            try:
-                t.insert(END,res[0].row(i))
-            except IndexError:
-                pass
-            t.insert(END,"\n")
+        c = trans(res[0])
+        nuevoNombre="ans("+Nombre+")"
+        mostrar(c,Nombre)
+        guardar(c,Nombre,nuevoNombre)
     else:
         t.insert(END, "La matriz fue resuelta pero no tiene un resultado util \n")
 
@@ -202,6 +208,9 @@ def determinante(Nombre):
         t.insert(END,"\n")
         m = Matrix(diccionario[Nombre])
         res = m.det()
+        nuevoNombre = "det("+Nombre+" = "
+        guardar(res,nuevoNombre)
+        
         t.insert(END,"Determinante = \t")
         t.insert(END,res)
         t.insert(END,"\n")
@@ -215,6 +224,7 @@ def eigVal(Nombre):
         t.insert(END,"\n")
         m = Matrix(diccionario[Nombre])
         res = m.eigenvals()
+        nuevoNombre = "EigenValor("+Nombre+")"
         t.insert(END,"Eigen Valores = \t")
         t.insert(END,res)
         t.insert(END,"\n")
@@ -232,28 +242,25 @@ def eigVect(Nombre):
         t.insert(END,"Eigen Valores = \n")
         t.insert(END,res)
         t.insert(END,"\n")
+        nuevoNombre = "EigVector("+Nombre+")"
+        guardar(m,nuevoNombre)
     else:
-        t.insert(END,"La matriz no es cuadrada \n")    
+        t.insert(END,"La matriz no es cuadrada \n")
+    
 
 def Inversa(Nombre):
     m = Matrix(diccionario[Nombre])
-    res = m.inv()
+    try:
+        res = m.inv()
+    except:
+        t.insert(END,"det = 0, la matriz no tiene inversa")
+    c = trans(res)
     t.insert(END,"\n")
     t.insert(END,"Resultado de la inversa = \t")
     t.insert(END,"\n")
-    for i in range(0,len(res)):
-            t.insert(END,"\t")
-            try:
-                t.insert(END,res.row(i))
-            except IndexError:
-                pass
-            t.insert(END,"\n")
-
-    string = Nombre + "^-1"
-    lstMatrices.insert(END,string)
-    matrices.insert(END,res)
-    diccionario[string]= matrices[-1]
-    print(diccionario)
+    nuevoNombre= Nombre + "^-1"
+    mostrar(c,nuevoNombre)
+    guardar(c,nuevoNombre)
     
 def Suma(Nombre):
     m = Matrix(diccionario[Nombre])
@@ -263,24 +270,94 @@ def Suma(Nombre):
     l.grid(row =1, column =0)
     scrl.config(command=l.yview)
     scrl.grid(row=1,column=1)
-    btn = Button(f, text="Sumar", command = lambda: Operacion(m,l.get(l.curselection())))
+    btn = Button(f, text="Sumar", command = lambda: Operacion(m,l.get(l.curselection()),Nombre))
     btn.grid(row=2,column=0)
+    l.bind('<<ListboxSelect>>',onSelect)
     for item in diccionario:
         l.insert(END, item)
 
-    def Operacion(m, Nombre):
-        m2 = Matrix(diccionario[Nombre])
+    def Operacion(m, Nombre2,Nombre):
+        m2 = Matrix(diccionario[Nombre2])
+        
         res = m + m2
-        row = list()
-        for i in range(0, len(res.row(0))):
-            pass    
-        string = "Suma"
-        lstMatrices.insert(END,string)
-        matrices.insert(END,int(res))
-        diccionario[string]= matrices[-1]
-        print(diccionario)
+        c = trans(res)
+           
+        nuevoNombre = Nombre +" + "  + Nombre2 
+        
+        mostrar(c,nuevoNombre)
+        t.insert(END,"\n")
+        guardar(c,nuevoNombre)
         f.destroy()
+    t.insert(END,"\n")
+def Resta(Nombre):
+    m = Matrix(diccionario[Nombre])
+    f = Toplevel()
+    scrl = Scrollbar(f )
+    l = Listbox(f,yscrollcommand=scrl)
+    l.grid(row =1, column =0)
+    scrl.config(command=l.yview)
+    scrl.grid(row=1,column=1)
+    btn = Button(f, text="Restar", command = lambda: Operacion(m,l.get(l.curselection()),Nombre))
+    btn.grid(row=2,column=0)
+    l.bind('<<ListboxSelect>>',onSelect)
+    for item in diccionario:
+        l.insert(END, item)
 
+    def Operacion(m, Nombre2,Nombre):
+        m2 = Matrix(diccionario[Nombre2])
+        res = m - m2
+        c = trans(res)
+        nuevoNombre = Nombre +" - "  + Nombre2 
+        mostrar(c,nuevoNombre)
+        t.insert(END,"\n")
+        guardar(c,nuevoNombre)
+        f.destroy()
+    t.insert(END,"\n")
+def Multiplicacion(Nombre):
+    m = Matrix(diccionario[Nombre])
+    f = Toplevel()
+    scrl = Scrollbar(f )
+    l = Listbox(f,yscrollcommand=scrl)
+    l.grid(row =1, column =0)
+    scrl.config(command=l.yview)
+    scrl.grid(row=1,column=1)
+    btn = Button(f, text="Multiplicar", command = lambda: Operacion(m,l.get(l.curselection()),Nombre))
+    btn.grid(row=2,column=0)
+    l.bind('<<ListboxSelect>>',onSelect)
+    for item in diccionario:
+        l.insert(END, item)
 
+    def Operacion(m, Nombre2,Nombre):
+        m2 = Matrix(diccionario[Nombre2])
+        res = m * m2
+        c = trans(res)
+           
+        nuevoNombre = Nombre +" x "  + Nombre2 
+        
+        mostrar(c,nuevoNombre)
+        t.insert(END,"\n")
+        guardar(c,nuevoNombre)
+        f.destroy()
+    t.insert(END,"\n")
+def trans(m):
+    row = list()
+    col = list()
+    contador = 1
+    j =0
+    for i in range(0,len(m)):
+          
+        col.insert(contador,m[i])
+        if(contador == (len(m.row(0)))):
+            row.insert(j,col)
+            col = list()
+            j+=1
+
+            contador = 0      
+        contador += 1
+    return row
+def guardar(matrix,Nombre):
+    matrices.append(matrix)
+    diccionario[Nombre]=matrices[-1]
+    lstMatrices.insert(END,Nombre)
     
 root.mainloop()    
