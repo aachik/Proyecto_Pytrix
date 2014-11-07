@@ -1,70 +1,84 @@
 ##programa hecho por Abdul Hamid Achik López
 
 from tkinter import *
+from tkinter import ttk
 from sympy import *
 
 matrices = list()
 diccionario = dict()
 root = Tk()
-f = Frame(root,height = 600, width = 820)
+f = ttk.Frame(root,height = 600, width = 820)
 f.pack()
-titulo = Label(f,text ="Programa Pytrix", fg="blue",font=('Arial',20))
-titulo.place(x = 330, y = 5)
+root.title("Pytrix")
+root.option_add('+tearOff',False)
+menubar = Menu(f)
+root.config(menu= menubar)
+file = Menu(menubar)
+edit = Menu(menubar)
+help_ = Menu(menubar)
+menubar.add_cascade(menu = file,label ='Archivo')
+menubar.add_cascade(menu = edit,label='Editar')
+menubar.add_cascade(menu=help_,label='Ayuda')
+help_.add_command(label='Informacion', command = lambda: about())
 
-gBotones = LabelFrame(f,text="Menu ",padx=5,pady=5)
-gBotones.place(x = 695,y = 50)
-gText = LabelFrame(f,text="Texto",padx=5,pady=5)
-gText.place(x=20,y=50)
-gLista = LabelFrame(f,text="Matrices Creadas",padx=5,pady=5)
-gLista.place(x = 695,y=280)
-gMenu = LabelFrame(f,text="Operaciones", padx=5,pady=5)
-gMenu.place(x=695,y=380)
+gBotones = ttk.LabelFrame(f,text="Menu ")
+gBotones.place(x = 695,y = 20)
+gText = ttk.LabelFrame(f,text="Texto")
+gText.place(x=20,y=20)
+gLista = ttk.LabelFrame(f,text="Matrices Creadas")
+gLista.place(x = 695,y=250)
+gMenu = ttk.LabelFrame(f,text="Operaciones")
+gMenu.place(x=695,y=350)
+
+
+
 t = Text(gText, height = 30,width=80)
 t.pack()
-bMult = Button(gMenu, text="x", width = 10,
+bMult = ttk.Button(gMenu, text="x", width= 10,
                command = lambda:Multiplicacion(lstMatrices.get(lstMatrices.curselection())))
 bMult.pack(padx=5,pady=5)
-bSum = Button(gMenu, text="+", width = 10,
+bSum = ttk.Button(gMenu, text="+", width= 10,
               command = lambda:Suma(lstMatrices.get(lstMatrices.curselection())))
 bSum.pack(padx=5,pady=5)
-bRes = Button(gMenu, text="-", width = 10,
+bRes =ttk.Button(gMenu, text="-", width= 10,
               command = lambda:Resta(lstMatrices.get(lstMatrices.curselection())))
 bRes.pack(padx=5,pady=5)
-bInv = Button(gMenu, text="Inversa", width = 10,\
+bInv = ttk.Button(gMenu, text="Inversa", width = 10,\
               command=lambda:Inversa(lstMatrices.get(lstMatrices.curselection())))
 
 bInv.pack(padx=5,pady=10)
-bInit = Button(gBotones, text ="Crear Matriz",width = 10,\
+bInit = ttk.Button(gBotones, text ="Crear Matriz",width = 10,\
                command = lambda:init())
 bInit.pack(padx=5,pady=5)
-bGauss = Button(gBotones, text ="Gauss",width = 10,\
-                command =lambda:\
+bGauss = ttk.Button(gBotones, text ="Gauss",width = 10,\
+                command= lambda:\
                 gauss(lstMatrices.get(lstMatrices.curselection())))
-bGauss.pack(padx=5,pady=5)
-bDeter = Button(gBotones,text = "Determinante",width = 10,\
+bGauss.pack(padx=5, pady=5)
+bDeter = ttk.Button(gBotones,text = "Determinante",width = 10,\
                 command = lambda:\
                 determinante(lstMatrices.get(lstMatrices.curselection())))
 bDeter.pack(padx=5,pady=5)
 
-bEigVals = Button(gBotones,text = "Eigenvalores",\
+bEigVals = ttk.Button(gBotones,text = "Eigenvalores",\
                   command=lambda:\
                   eigVal(lstMatrices.get(lstMatrices.curselection())))
 bEigVals.pack(padx=5,pady=5)
-bEigVects = Button(gBotones,text = "Eigenvectores",\
+bEigVects = ttk.Button(gBotones,text = "Eigenvectores",\
                    command=lambda:\
                    eigVect(lstMatrices.get(lstMatrices.curselection())))
 bEigVects.pack(padx=5,pady=5)
 
 
-scrlMatrices = Scrollbar(gLista)
+scrlMatrices = ttk.Scrollbar(gLista)
 lstMatrices = Listbox(gLista,yscrollcommand=scrlMatrices,exportselection=0)
 
-lstMatrices.config(height=3,width=10)
-lstMatrices.grid(row =0,column =0)
+lstMatrices.config(height=3,width=13)
+lstMatrices.grid(row=0, column=0)
 
 
 scrlMatrices.grid(row = 0, column =1)
 scrlMatrices.config(command=lstMatrices.yview)
+
 
 def init():
     
@@ -359,5 +373,8 @@ def guardar(matrix,Nombre):
     matrices.append(matrix)
     diccionario[Nombre]=matrices[-1]
     lstMatrices.insert(END,Nombre)
-    
+def about():
+    fx= Toplevel()
+    lb = ttk.Label(fx,text="creado por Abdul Hamid Achik Lopez")
+    lb.pack(padx=20,pady=20)
 root.mainloop()    
