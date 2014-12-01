@@ -3,6 +3,8 @@
 from tkinter import *
 from tkinter import ttk
 from sympy import *
+import DAO
+import models
 
 matrices = list()
 diccionario = dict()
@@ -20,6 +22,7 @@ menubar.add_cascade(menu=file, label='Archivo')
 menubar.add_cascade(menu=edit, label='Editar')
 menubar.add_cascade(menu=help_, label='Ayuda')
 help_.add_command(label='Informacion', command=lambda: about())
+file.add_command(label='Guardar',command = lambda:guardarFile(t.get("1.0",END)))
 gBotones = ttk.LabelFrame(f, text="Menu ")
 gBotones.place(x=695, y=20)
 gText = ttk.LabelFrame(f, text="Texto")
@@ -384,4 +387,11 @@ def MultVar(Nombre):
         nuevoNombre = Nombre +"*"+ str(constante)
         guardar(res, nuevoNombre)
         f.destroy()
+
+def guardarFile(texto):
+    DAO.agregar(texto)
+
+
+
+
 root.mainloop()    
